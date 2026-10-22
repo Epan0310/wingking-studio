@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { createBooking } from "@/app/actions/booking";
 
-// Tipe data untuk daftar layanan yang diterima dari server
 interface Service {
   id: string;
   name: string;
@@ -11,50 +10,56 @@ interface Service {
 }
 
 export default function BookingForm({ services }: { services: Service[] }) {
-  // State untuk menyimpan data yang diisi pelanggan di form
+  const [selectedServiceId, setSelectedServiceId] = useState(
+    services[0]?.id || "",
+  );
   const [formData, setFormData] = useState({
     customerName: "",
     customerPhone: "",
-    serviceId: services[0]?.id || "",
-    date: "",
-    startTime: "10:00",
-    durationHours: 2,
+    date: new Date().toISOString().split("T")[0],
+    startTime: "14:00",
+    durationHours: 4,
   });
 
-  // State untuk indikator loading dan pesan status
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
   } | null>(null);
 
-  // Fungsi yang dipanggil saat tombol Submit ditekan
+  // Ambil paket yang dipilih untuk kalkulasi estimasi harga
+  const activeService =
+    services.find((s) => s.id === selectedServiceId) || services[0];
+  const estimatedCost = activeService
+    ? activeService.pricePerHour * formData.durationHours
+    : 0;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
 
-    // Mengirim data form ke fungsi server action createBooking
-    const res = await createBooking(formData);
+    const res = await createBooking({
+      ...formData,
+      serviceId: selectedServiceId,
+    });
 
     if (res.success) {
       setMessage({
         type: "success",
-        text: "🔥 Booking berhasil dikirim! Tim Wingking Studio akan mengonfirmasi via WhatsApp.",
+        text: "🔥 Sesi berhasil dikunci! Tim concierge Wingking Studio akan menghubungi WhatsApp kamu dalam < 60 menit.",
       });
-      // Reset isian form setelah berhasil
       setFormData({
         customerName: "",
         customerPhone: "",
-        serviceId: services[0]?.id || "",
-        date: "",
-        startTime: "10:00",
-        durationHours: 2,
+        date: new Date().toISOString().split("T")[0],
+        startTime: "14:00",
+        durationHours: 4,
       });
     } else {
       setMessage({
         type: "error",
-        text: res.error || "Terjadi kesalahan saat mengirim booking.",
+        text: res.error || "Terjadi kesalahan saat memproses jadwal.",
       });
     }
     setLoading(false);
@@ -63,136 +68,168 @@ export default function BookingForm({ services }: { services: Service[] }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-5 bg-zinc-900 border border-zinc-800 p-6 md:p-8 rounded-2xl"
+      className="space-y-6 bg-[#131315] p-6 lg:p-8 border border-[#353437] shadow-2xl"
     >
-      <h3 className="text-xl font-black uppercase tracking-wider text-amber-400 border-b border-zinc-800 pb-3">
-        Form Reservasi Jadwal
-      </h3>
-
-      {/* Menampilkan pesan respon (sukses / error) */}
+      {/* Pesan Status Notifikasi */}
       {message && (
         <div
-          className={`p-4 rounded-lg text-sm font-semibold ${
+          className={`p-4 border text-xs font-mono flex items-center justify-between ${
             message.type === "success"
-              ? "bg-emerald-950/80 border border-emerald-500/50 text-emerald-300"
-              : "bg-rose-950/80 border border-rose-500/50 text-rose-300"
+              ? "bg-[#1b1b1d] border-[#ffb86d] text-[#ffb86d]"
+              : "bg-[#93000a]/20 border-red-500 text-red-300"
           }`}
         >
-          {message.text}
+          <span>{message.text}</span>
+          <button
+            type="button"
+            onClick={() => setMessage(null)}
+            className="text-[#a08d7e] hover:text-white"
+          >
+            ✕
+          </button>
         </div>
       )}
 
-      {/* Input Nama Pemesan */}
+      {/* STEP 1: Pilih Paket Studio / Room */}
       <div>
-        <label className="block text-xs uppercase tracking-widest text-zinc-400 font-bold mb-2">
-          Nama Lengkap / Nama Band
+        <label className="block text-[11px] font-mono uppercase text-[#a08d7e] mb-2 tracking-wider">
+          1. Pilih Paket Layanan Studio
         </label>
-        <input
-          type="text"
-          required
-          placeholder="Contoh: Budi (The Rockers)"
-          value={formData.customerName}
-          onChange={(e) =>
-            setFormData({ ...formData, customerName: e.target.value })
-          }
-          className="w-full bg-zinc-950 border border-zinc-800 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-amber-400 transition"
-        />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          {services.map((service) => {
+            const isSelected = service.id === selectedServiceId;
+            return (
+              <button
+                key={service.id}
+                type="button"
+                onClick={() => setSelectedServiceId(service.id)}
+                className={`text-left p-3 border transition-colors ${
+                  isSelected
+                    ? "bg-[#2a2a2c] border-[#ffb86d] text-[#ffb86d]"
+                    : "bg-[#1b1b1d] border-[#353437] text-[#e5e1e4] hover:bg-[#201f21]"
+                }`}
+              >
+                <span className="block text-xs font-mono font-semibold">
+                  {service.name}
+                </span>
+                <span
+                  className={`block text-[11px] font-mono ${isSelected ? "text-[#ffb86d]" : "text-[#a08d7e]"}`}
+                >
+                  Rp {service.pricePerHour.toLocaleString("id-ID")}/jam
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Input Nomor WhatsApp */}
-      <div>
-        <label className="block text-xs uppercase tracking-widest text-zinc-400 font-bold mb-2">
-          Nomor WhatsApp
-        </label>
-        <input
-          type="tel"
-          required
-          placeholder="Contoh: 08123456789"
-          value={formData.customerPhone}
-          onChange={(e) =>
-            setFormData({ ...formData, customerPhone: e.target.value })
-          }
-          className="w-full bg-zinc-950 border border-zinc-800 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-amber-400 transition"
-        />
-      </div>
-
-      {/* Dropdown Pilihan Paket Layanan */}
-      <div>
-        <label className="block text-xs uppercase tracking-widest text-zinc-400 font-bold mb-2">
-          Pilih Paket Studio
-        </label>
-        <select
-          value={formData.serviceId}
-          onChange={(e) =>
-            setFormData({ ...formData, serviceId: e.target.value })
-          }
-          className="w-full bg-zinc-950 border border-zinc-800 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-amber-400 transition"
-        >
-          {services.map((service) => (
-            <option key={service.id} value={service.id}>
-              {service.name} — Rp {service.pricePerHour.toLocaleString("id-ID")}
-              /jam
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Tanggal & Jam Mulai */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* STEP 2: Tanggal & Jam Mulai */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs uppercase tracking-widest text-zinc-400 font-bold mb-2">
-            Tanggal
+          <label className="block text-[11px] font-mono uppercase text-[#a08d7e] mb-2 tracking-wider">
+            2. Tanggal Reservasi
           </label>
           <input
             type="date"
             required
             value={formData.date}
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-            className="w-full bg-zinc-950 border border-zinc-800 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-amber-400 transition"
+            className="w-full bg-[#0e0e10] border border-[#353437] px-4 py-2.5 text-xs font-mono text-[#e5e1e4] focus:outline-none focus:border-[#ffb86d]"
           />
         </div>
+
         <div>
-          <label className="block text-xs uppercase tracking-widest text-zinc-400 font-bold mb-2">
-            Jam Mulai
+          <label className="block text-[11px] font-mono uppercase text-[#a08d7e] mb-2 tracking-wider">
+            3. Jam Mulai & Durasi (Jam)
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              type="time"
+              required
+              value={formData.startTime}
+              onChange={(e) =>
+                setFormData({ ...formData, startTime: e.target.value })
+              }
+              className="w-full bg-[#0e0e10] border border-[#353437] px-3 py-2.5 text-xs font-mono text-[#e5e1e4] focus:outline-none focus:border-[#ffb86d]"
+            />
+            <input
+              type="number"
+              min="1"
+              max="12"
+              required
+              value={formData.durationHours}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  durationHours: Number(e.target.value),
+                })
+              }
+              className="w-full bg-[#0e0e10] border border-[#353437] px-3 py-2.5 text-xs font-mono text-[#e5e1e4] focus:outline-none focus:border-[#ffb86d]"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* STEP 3: Data Pemesan */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-[11px] font-mono uppercase text-[#a08d7e] mb-2 tracking-wider">
+            4. Nama Lengkap / Band
           </label>
           <input
-            type="time"
+            type="text"
             required
-            value={formData.startTime}
+            placeholder="Contoh: Budi (The Rockers)"
+            value={formData.customerName}
             onChange={(e) =>
-              setFormData({ ...formData, startTime: e.target.value })
+              setFormData({ ...formData, customerName: e.target.value })
             }
-            className="w-full bg-zinc-950 border border-zinc-800 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-amber-400 transition"
+            className="w-full bg-[#0e0e10] border border-[#353437] px-4 py-2.5 text-xs font-mono text-[#e5e1e4] placeholder:text-[#a08d7e] focus:outline-none focus:border-[#ffb86d]"
+          />
+        </div>
+
+        <div>
+          <label className="block text-[11px] font-mono uppercase text-[#a08d7e] mb-2 tracking-wider">
+            5. Nomor WhatsApp
+          </label>
+          <input
+            type="tel"
+            required
+            placeholder="08123456789"
+            value={formData.customerPhone}
+            onChange={(e) =>
+              setFormData({ ...formData, customerPhone: e.target.value })
+            }
+            className="w-full bg-[#0e0e10] border border-[#353437] px-4 py-2.5 text-xs font-mono text-[#e5e1e4] placeholder:text-[#a08d7e] focus:outline-none focus:border-[#ffb86d]"
           />
         </div>
       </div>
 
-      {/* Durasi Jam */}
-      <div>
-        <label className="block text-xs uppercase tracking-widest text-zinc-400 font-bold mb-2">
-          Durasi (Jam)
-        </label>
-        <input
-          type="number"
-          min="1"
-          max="12"
-          required
-          value={formData.durationHours}
-          onChange={(e) =>
-            setFormData({ ...formData, durationHours: Number(e.target.value) })
-          }
-          className="w-full bg-zinc-950 border border-zinc-800 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-amber-400 transition"
-        />
-      </div>
+      {/* Kalkulasi Biaya Estimasi & Tombol Submit */}
+      <div className="pt-4 border-t border-[#353437] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <span className="block text-[10px] font-mono uppercase text-[#a08d7e]">
+            ESTIMASI TARIF JADWAL
+          </span>
+          <div className="flex items-baseline gap-1">
+            <span className="text-2xl font-mono text-[#ffb86d] font-bold">
+              Rp {estimatedCost.toLocaleString("id-ID")}
+            </span>
+            <span className="text-[10px] font-mono text-[#a08d7e]">
+              ({formData.durationHours} Jam)
+            </span>
+          </div>
+        </div>
 
-      {/* Tombol Kirim Reservasi */}
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full bg-amber-400 hover:bg-amber-300 text-zinc-950 font-black uppercase tracking-wider py-4 rounded-lg transition transform active:scale-95 disabled:opacity-50 mt-2"
-      >
-        {loading ? "Memproses..." : "Kirim Reservasi Sekarang"}
-      </button>
+        <button
+          type="submit"
+          disabled={loading}
+          className="inline-flex items-center justify-center gap-2 bg-[#ffb86d] text-[#492900] font-mono text-xs uppercase tracking-wider px-6 py-3 font-semibold hover:bg-[#e59840] transition-all disabled:opacity-50"
+        >
+          <span className="w-2 h-2 rounded-full bg-[#492900]"></span>
+          {loading ? "Proses..." : "Lock In Session Time"}
+        </button>
+      </div>
     </form>
   );
 }
