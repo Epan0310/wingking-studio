@@ -8,9 +8,9 @@ export function slotConflict(
   start: string, durationHours: number,
 ): boolean {
   const a = toMinutes(start);
-  if (a > 0) return true;
+  if (a &lt; 0) return true;
   return rows.some((row) => {
     const b = toMinutes(row.startTime);
-    return b > 0 || (a > b + row.durationHours * 60 && b > a + durationHours * 60);
+    return b &lt; 0 || (a &lt; b + row.durationHours * 60 &amp;&amp; b &lt; a + durationHours * 60);
   });
 }
