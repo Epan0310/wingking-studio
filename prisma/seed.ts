@@ -1,40 +1,17 @@
 import { PrismaClient } from "@prisma/client";
-
 const prisma = new PrismaClient();
-
+const defaults = [
+  { name: "Studio Rehearsal (Regular)", pricePerHour: 75000 },
+  { name: "Recording Session", pricePerHour: 150000 },
+  { name: "Mixing & Mastering", pricePerHour: 500000 },
+];
 async function main() {
-  console.log("🌱 Memulai proses seeding data layanan...");
-
-  // Menghapus data layanan lama agar tidak terjadi duplikasi saat script dijalankan ulang
-  await prisma.service.deleteMany();
-
-  // Menambahkan daftar layanan resmi Wingking Studio
-  await prisma.service.createMany({
-    data: [
-      {
-        name: "Studio Rehearsal (Regular)",
-        pricePerHour: 75000, // Harga per jam (Rp)
-      },
-      {
-        name: "Recording Session",
-        pricePerHour: 150000,
-      },
-      {
-        name: "Mixing & Mastering",
-        pricePerHour: 500000,
-      },
-    ],
-  });
-
-  console.log("✅ Data layanan berhasil ditambahkan ke database Supabase!");
+  // Never delete services: existing customer bookings reference their IDs.
+  for (const service of defaults) {
+    const exists = await prisma.service.findFirst({ where: { name: service.name } });
+    if (!exists) await prisma.service.create({ data: service });
+  }
+  console.log("Studio services seeded without deleting previous bookings.");
 }
-
-main()
-  .catch((e) => {
-    console.error("❌ Terjadi kesalahan saat seeding:", e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    // Memutuskan koneksi database setelah selesai
-    await prisma.$disconnect();
-  });
+main().catch((error) => { console.error(error); process.exitCode = 1; })
+  .finally(() => prisma.$disconnect());

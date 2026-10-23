@@ -1,6 +1,7 @@
 // Mengimpor fungsi backend action dan komponen form booking
 import { getServices } from "@/app/actions/booking";
 import BookingForm from "@/components/BookingForm";
+import MobileNav from "@/components/MobileNav";
 
 export default async function Home() {
   // Mengambil daftar layanan resmi Wingking Studio dari Supabase
@@ -49,7 +50,7 @@ export default async function Home() {
               Spaces
             </a>
             <a
-              href="#community"
+              href="#spaces"
               className="text-[#d7c3b1] hover:text-[#ffb86d] transition-all py-1"
             >
               Dispatches
@@ -62,7 +63,8 @@ export default async function Home() {
             </a>
           </nav>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 md:gap-4">
+            <MobileNav />
             <a
               href="https://instagram.com/w.hubstudio"
               target="_blank"
@@ -74,7 +76,7 @@ export default async function Home() {
             <div className="h-4 w-px bg-[#353437] hidden md:block"></div>
             <a
               href="/admin"
-              className="inline-flex items-center gap-2 bg-[#ffb86d] text-[#492900] font-mono text-xs uppercase tracking-wider px-4 py-2 hover:bg-[#e59840] transition-colors font-semibold"
+              className="hidden sm:inline-flex items-center gap-2 bg-[#ffb86d] text-[#492900] font-mono text-xs uppercase tracking-wider px-4 py-2 hover:bg-[#e59840] transition-colors font-semibold"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-[#492900]"></span>
               Admin Portal →
@@ -249,7 +251,7 @@ export default async function Home() {
                     Sesi Tracking
                   </span>
                   <span className="font-serif text-3xl text-[#ffb86d] mt-1">
-                    1,500+
+                    —
                   </span>
                   <span className="font-mono text-[9px] text-[#b5b5b2]">
                     Jam Jamming & Rec
@@ -260,7 +262,7 @@ export default async function Home() {
                     Karya Rilis
                   </span>
                   <span className="font-serif text-3xl text-[#e5e1e4] mt-1">
-                    120+
+                    —
                   </span>
                   <span className="font-mono text-[9px] text-[#b5b5b2]">
                     Single & Album
@@ -271,7 +273,7 @@ export default async function Home() {
                     Kualitas Ruang
                   </span>
                   <span className="font-serif text-3xl text-[#e5e1e4] mt-1">
-                    100%
+                    —
                   </span>
                   <span className="font-mono text-[9px] text-[#b5b5b2]">
                     Treated Acoustics
@@ -426,10 +428,10 @@ export default async function Home() {
                 </p>
               </div>
               <a
-                href="#booking-console"
+                href="https://instagram.com/w.hubstudio" target="_blank" rel="noopener noreferrer"
                 className="font-mono text-xs uppercase text-[#ffb86d] font-semibold flex items-center gap-1"
               >
-                Pilih Paket Ini{" "}
+                Konsultasi Mixing{" "}
                 <span className="material-symbols-outlined text-[16px]">
                   arrow_forward
                 </span>
@@ -568,6 +570,7 @@ export default async function Home() {
               </h2>
             </div>
 
+            {!response.success && <p role="alert" className="mb-5 border border-red-400 p-4 text-red-300">Layanan booking belum tersedia karena koneksi data bermasalah. Coba lagi nanti.</p>}
             <BookingForm services={services} />
           </div>
         </section>
