@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import SiteMotion from "@/components/SiteMotion";
 
 export const metadata: Metadata = {
   title: "WINGKING STUDIO — Acoustic Craft & Production (@w.hubstudio)",
@@ -33,6 +34,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-[#131315] text-[#e5e1e4] antialiased selection:bg-[#e59840] selection:text-[#5c3400] min-h-screen flex flex-col">
+        <SiteMotion />
         {children}
       </body>
     </html>
