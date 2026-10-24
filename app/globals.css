@@ -1,26 +1,115 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+:root { color-scheme: dark; }
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: #131315;
+  --color-foreground: #e5e1e4;
+}
+html { scroll-behavior: smooth; }
+body {
+  background: #131315;
+  color: #e5e1e4;
+  font-family: "Hanken Grotesk", Arial, Helvetica, sans-serif;
+}
+.font-serif { font-family: "Newsreader", Georgia, serif; }
+.font-mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+a, button, input, select { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 2px solid #ffb86d; outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Wingking Studio motion system: transform/opacity based, progressive, accessible. */
+:root { --wingking-ease: cubic-bezier(.22, 1, .36, 1); --wingking-scroll-progress: 0; }
+main section { scroll-margin-top: 5.5rem; }
+header { isolation: isolate; }
+header::after {
+  content: ""; position: absolute; inset: auto 0 -1px; height: 2px;
+  background: linear-gradient(90deg, #e59840, #ffcc96, #e59840);
+  transform: scaleX(var(--wingking-scroll-progress)); transform-origin: left center;
+  transition: transform 100ms linear; pointer-events: none;
+}
+@keyframes wingking-fade-up {
+  from { opacity: 0; transform: translate3d(0, 24px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes wingking-hero-drift {
+  from { transform: scale(1.02) translate3d(-.4%, 0, 0); }
+  to { transform: scale(1.085) translate3d(.4%, -1%, 0); }
+}
+@keyframes wingking-meter {
+  0%, 100% { transform: scaleY(.35); opacity: .55; }
+  35% { transform: scaleY(1); opacity: 1; }
+  68% { transform: scaleY(.7); opacity: .8; }
+}
+@keyframes wingking-menu {
+  from { opacity: 0; transform: translate3d(0, -10px, 0) scale(.97); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes wingking-live-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,184,109,.38); }
+  50% { box-shadow: 0 0 0 7px rgba(255,184,109,0); }
+}
+main > section:first-of-type img {
+  animation: wingking-hero-drift 22s ease-in-out infinite alternate;
+  transform-origin: center; will-change: transform;
+}
+main > section:first-of-type h1 { animation: wingking-fade-up 820ms var(--wingking-ease) both; }
+main > section:first-of-type h1 + p { animation: wingking-fade-up 820ms 150ms var(--wingking-ease) both; }
+main > section:first-of-type h1 + p + div { animation: wingking-fade-up 820ms 260ms var(--wingking-ease) both; }
+main > section:first-of-type .animate-ping { animation: wingking-live-pulse 2.4s ease-in-out infinite; }
+main > section:first-of-type [class*="items-end"] > [class*="bg-[#ffb86d]"] {
+  transform-origin: bottom center; animation: wingking-meter 950ms ease-in-out infinite alternate;
+}
+main > section:first-of-type [class*="items-end"] > div:nth-child(even) { animation-delay: -420ms; }
+.wingking-motion-ready .motion-reveal {
+  opacity: 0; transform: translate3d(0, 24px, 0);
+  transition: opacity 760ms var(--wingking-ease), transform 760ms var(--wingking-ease);
+  transition-delay: var(--motion-delay, 0ms);
+}
+.wingking-motion-ready .motion-reveal.motion-visible { opacity: 1; transform: translate3d(0, 0, 0); }
+#capabilities .grid > div, #spaces .grid > div {
+  position: relative; overflow: hidden;
+  transition: border-color 340ms ease, box-shadow 420ms ease, background-color 340ms ease;
+}
+#capabilities .grid > div::after, #spaces .grid > div::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0;
+  background: linear-gradient(112deg, transparent 15%, rgba(255,184,109,.085) 48%, transparent 82%);
+  transform: translateX(-50%); transition: opacity 420ms ease, transform 650ms var(--wingking-ease);
+}
+#capabilities .grid > div img, #spaces .grid > div img { transition: transform 800ms var(--wingking-ease), filter 500ms ease; }
+#mobile-nav { transform-origin: top right; animation: wingking-menu 300ms var(--wingking-ease) both; }
+a[href="#booking-console"], button[type="submit"], #booking-console button[type="button"], main form button {
+  transition: transform 240ms var(--wingking-ease), box-shadow 300ms ease,
+    background-color 260ms ease, border-color 260ms ease, opacity 260ms ease;
+}
+input:not([type="hidden"]), select {
+  transition: border-color 250ms ease, background-color 250ms ease, box-shadow 250ms ease;
+}
+input:not([type="hidden"]):focus-visible, select:focus-visible {
+  border-color: #ffb86d;
+  box-shadow: 0 0 0 3px rgba(255,184,109,.1);
+}
+#booking-console [role="alert"], main [role="alert"] { animation: wingking-fade-up 340ms var(--wingking-ease) both; }
+@media (hover: hover) and (pointer: fine) {
+  #capabilities .grid > div:hover, #spaces .grid > div:hover {
+    border-color: #9f734b; box-shadow: 0 18px 55px rgba(0,0,0,.35), 0 0 22px rgba(255,184,109,.08);
+  }
+  #capabilities .grid > div:hover::after, #spaces .grid > div:hover::after { opacity: 1; transform: translateX(50%); }
+  #spaces .grid > div:hover img { transform: scale(1.065); filter: brightness(1.07); }
+  a[href="#booking-console"]:hover, button[type="submit"]:hover, main form button:hover:not(:disabled) {
+    transform: translateY(-2px); box-shadow: 0 7px 25px rgba(255,184,109,.17);
   }
 }
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media (prefers-reduced-motion: reduce) {
+  header::after { transition: none; }
+  main > section:first-of-type img, main > section:first-of-type h1,
+  main > section:first-of-type h1 + p, main > section:first-of-type h1 + p + div,
+  main > section:first-of-type .animate-ping, #mobile-nav,
+  #booking-console [role="alert"], main [role="alert"] { animation: none !important; }
+  .wingking-motion-ready .motion-reveal, .wingking-motion-ready .motion-reveal.motion-visible {
+    opacity: 1 !important; transform: none !important; transition: none !important;
+  }
+  #capabilities .grid > div::after, #spaces .grid > div::after { display: none; }
 }

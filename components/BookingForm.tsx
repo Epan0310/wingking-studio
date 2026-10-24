@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createBooking } from "@/app/actions/booking";
+import { jakartaToday } from "@/lib/booking-rules";
 
 interface Service {
   id: string;
@@ -16,7 +17,7 @@ export default function BookingForm({ services }: { services: Service[] }) {
   const [formData, setFormData] = useState({
     customerName: "",
     customerPhone: "",
-    date: new Date().toISOString().split("T")[0],
+    date: jakartaToday(),
     startTime: "14:00",
     durationHours: 4,
   });
@@ -39,6 +40,7 @@ export default function BookingForm({ services }: { services: Service[] }) {
     setLoading(true);
     setMessage(null);
 
+    try {
     const res = await createBooking({
       ...formData,
       serviceId: selectedServiceId,
@@ -47,12 +49,12 @@ export default function BookingForm({ services }: { services: Service[] }) {
     if (res.success) {
       setMessage({
         type: "success",
-        text: "🔥 Sesi berhasil dikunci! Tim concierge Wingking Studio akan menghubungi WhatsApp kamu dalam < 60 menit.",
+        text: "Permintaan booking sudah tercatat dan MENUNGGU konfirmasi studio. Simpan jadwal sementara dan tunggu dihubungi oleh admin.",
       });
       setFormData({
         customerName: "",
         customerPhone: "",
-        date: new Date().toISOString().split("T")[0],
+        date: jakartaToday(),
         startTime: "14:00",
         durationHours: 4,
       });
@@ -62,7 +64,11 @@ export default function BookingForm({ services }: { services: Service[] }) {
         text: res.error || "Terjadi kesalahan saat memproses jadwal.",
       });
     }
-    setLoading(false);
+    } catch {
+      setMessage({ type: "error", text: "Koneksi bermasalah. Reservasi belum terkonfirmasi tersimpan." });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -90,6 +96,7 @@ export default function BookingForm({ services }: { services: Service[] }) {
         </div>
       )}
 
+      {services.length === 0 && <p role="alert" className="border border-red-400 p-3 text-sm text-red-300">Booking belum tersedia. Tidak ada layanan aktif atau database belum terhubung.</p>}
       {/* STEP 1: Pilih Paket Studio / Room */}
       <div>
         <label className="block text-[11px] font-mono uppercase text-[#a08d7e] mb-2 tracking-wider">
@@ -131,6 +138,7 @@ export default function BookingForm({ services }: { services: Service[] }) {
           </label>
           <input
             type="date"
+            min={jakartaToday()}
             required
             value={formData.date}
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
@@ -223,11 +231,11 @@ export default function BookingForm({ services }: { services: Service[] }) {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || services.length === 0}
           className="inline-flex items-center justify-center gap-2 bg-[#ffb86d] text-[#492900] font-mono text-xs uppercase tracking-wider px-6 py-3 font-semibold hover:bg-[#e59840] transition-all disabled:opacity-50"
         >
           <span className="w-2 h-2 rounded-full bg-[#492900]"></span>
-          {loading ? "Proses..." : "Lock In Session Time"}
+          {loading ? "Proses..." : "Ajukan Booking"}
         </button>
       </div>
     </form>
