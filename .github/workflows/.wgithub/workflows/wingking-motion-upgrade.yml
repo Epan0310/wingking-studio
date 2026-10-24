@@ -1,0 +1,45 @@
+name: Wingking Motion Upgrade
+on:
+  push:
+    branches: [dev/unknown2-1]
+    paths: [.github/workflows/wingking-motion-upgrade.yml]
+permissions:
+  contents: write
+jobs:
+  motion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: dev/unknown2-1
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install verified motion patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 2 -o /tmp/wingking-motion.zip 'https://c9ab7109-d689-480d-86f7-318f0529f108.sandbox.floot.app/_cdn/static/1b77efd2-43e4-4b19-b036-4520083febf3-wingking-motion-patch.zip'
+          echo 'dfbc5835e0c3d375cd1a92dea3ea172fe6881d8cd1090e60d57bb3d77041427a  /tmp/wingking-motion.zip' | sha256sum -c -
+          unzip -q /tmp/wingking-motion.zip -d "$RUNNER_TEMP"
+          node "$RUNNER_TEMP/wingking-motion/apply-motion.mjs"
+          git diff --check
+      - name: Validate TypeScript and booking tests
+        run: |
+          npm ci --no-audit --no-fund
+          npx prisma generate
+          npm run test:booking
+          npx tsc --noEmit
+      - name: Push motion implementation to development only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git branch --show-current)" = dev/unknown2-1
+          rm .github/workflows/wingking-motion-upgrade.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A app/globals.css app/layout.tsx components/SiteMotion.tsx .github/workflows/wingking-motion-upgrade.yml
+          git commit -m 'feat: add accessible animated UI motion system'
+          git push origin HEAD:dev/unknown2-1
