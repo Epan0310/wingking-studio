@@ -17,7 +17,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       <h1 className="font-serif text-3xl">Admin Studio</h1>
       <p className="text-sm text-[#c5b5a8]">Login hanya untuk pengelola studio.</p>
       {!adminReady() && <p role="alert" className="text-red-300">Akun admin belum dikonfigurasi di server. Hubungi pengembang.</p>}
-      {error && <p role="alert" className="text-red-300">Login gagal atau terlalu banyak percobaan.</p>}
+      {error && <p role="alert" className="text-red-300">{error === "update" ? "Perubahan reservasi gagal, ditolak, atau bentrok dengan jadwal lain." : "Login gagal atau terlalu banyak percobaan."}</p>}
       <form action={loginAdmin} className="space-y-4">
         <label className="block text-sm">Kata sandi admin<input className={`${input} mt-2`} type="password" name="password" autoComplete="current-password" required minLength={1}/></label>
         <button disabled={!adminReady()} className={`${btn} w-full disabled:opacity-40`}>Masuk ke dashboard</button>
@@ -41,6 +41,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       <div><p className="font-mono text-xs text-[#ffb86d]">WINGKING STUDIO // ADMIN</p><h1 className="font-serif text-4xl mt-2">Booking Console</h1></div>
       <form action={logoutAdmin}><button className={btn}>Keluar</button></form>
     </header>
+    {error === "update" && <p role="alert" className="my-5 border border-red-500 p-4 text-red-300">Perubahan reservasi ditolak atau terjadi bentrokan jadwal. Periksa ulang status booking.</p>}
     {dbError && <p role="alert" className="my-5 border border-red-500 p-4 text-red-300">Database belum terhubung. Reservasi dan harga tidak dapat ditampilkan.</p>}
     <section className="my-8"><h2 className="text-xl font-semibold mb-4">Reservasi terbaru ({bookings.length})</h2>
       <div className="space-y-3">{bookings.map((b) => <article key={b.id} className={card}>

@@ -18,7 +18,11 @@ export default function SiteMotion() {
       selectors.flatMap((selector) => Array.from(document.querySelectorAll<HTMLElement>(selector))),
     )).filter((element) => element.getClientRects().length > 0);
 
+    if (typeof IntersectionObserver === "undefined") return;
+
+    let observedEntries = 0;
     const observer = new IntersectionObserver((entries) => {
+      observedEntries += entries.length;
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
         entry.target.classList.add("motion-visible");
@@ -32,6 +36,13 @@ export default function SiteMotion() {
       observer.observe(element);
     });
     document.documentElement.classList.add("wingking-motion-ready");
+    // Fail-safe: an observer blocked by browser extensions must not hide content forever.
+    const rescue = window.setTimeout(() => {
+      if (observedEntries === 0) {
+        elements.forEach((element) => element.classList.add("motion-visible"));
+        observer.disconnect();
+      }
+    }, 2200);
 
     let frame = 0;
     const updateProgress = () => {
@@ -48,6 +59,7 @@ export default function SiteMotion() {
     window.addEventListener("resize", updateProgress, { passive: true });
 
     return () => {
+      window.clearTimeout(rescue);
       observer.disconnect();
       window.removeEventListener("scroll", updateProgress);
       window.removeEventListener("resize", updateProgress);

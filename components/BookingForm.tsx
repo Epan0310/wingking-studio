@@ -10,9 +10,16 @@ interface Service {
   pricePerHour: number;
 }
 
+/* Read-only visual service references when the production database is unavailable.
+ * These must never be submitted as real bookings. */
+const previewServices: Service[] = [
+  { id: "preview-rehearsal", name: "Studio Rehearsal (Regular)", pricePerHour: 75000 },
+  { id: "preview-recording", name: "Recording Session", pricePerHour: 150000 },
+];
+
 export default function BookingForm({ services }: { services: Service[] }) {
   const [selectedServiceId, setSelectedServiceId] = useState(
-    services[0]?.id || "",
+    services[0]?.id || "preview-rehearsal",
   );
   const [formData, setFormData] = useState({
     customerName: "",
@@ -29,8 +36,9 @@ export default function BookingForm({ services }: { services: Service[] }) {
   } | null>(null);
 
   // Ambil paket yang dipilih untuk kalkulasi estimasi harga
+  const presentedServices = services.length > 0 ? services : previewServices;
   const activeService =
-    services.find((s) => s.id === selectedServiceId) || services[0];
+    presentedServices.find((s) => s.id === selectedServiceId) || presentedServices[0];
   const estimatedCost = activeService
     ? activeService.pricePerHour * formData.durationHours
     : 0;
@@ -96,14 +104,14 @@ export default function BookingForm({ services }: { services: Service[] }) {
         </div>
       )}
 
-      {services.length === 0 && <p role="alert" className="border border-red-400 p-3 text-sm text-red-300">Booking belum tersedia. Tidak ada layanan aktif atau database belum terhubung.</p>}
+      {services.length === 0 && <p role="alert" className="border border-[#ffb86d] bg-[#2a231b] p-3 text-sm text-[#ffcc96]">Mode pratinjau: database studio belum tersambung. Harga di bawah hanya referensi tampilan dan tombol booking dinonaktifkan; tidak ada reservasi yang terkirim.</p>}
       {/* STEP 1: Pilih Paket Studio / Room */}
       <div>
         <label className="block text-[11px] font-mono uppercase text-[#a08d7e] mb-2 tracking-wider">
           1. Pilih Paket Layanan Studio
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          {services.map((service) => {
+          {presentedServices.map((service) => {
             const isSelected = service.id === selectedServiceId;
             return (
               <button
