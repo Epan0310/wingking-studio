@@ -1,0 +1,41 @@
+name: Wingking fail-open reveal repair
+on:
+  push:
+    branches: [dev/unknown2-1]
+    paths: [.github/workflows/wingking-visibility-fix.yml]
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: dev/unknown2-1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply reviewed patch
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 2 -o /tmp/fix.mjs 'https://c9ab7109-d689-480d-86f7-318f0529f108.sandbox.floot.app/_cdn/static/wingking-reveal-failopen-20261026.mjs'
+          echo 'da7d2c8a5d6ba64e5a531517d2b60db9a52df9f65cee512e587fccf331c5a904  /tmp/fix.mjs' | sha256sum -c -
+          node /tmp/fix.mjs
+          git diff --check
+          npm ci --no-audit --no-fund
+          npx prisma generate
+          npm run test:booking
+          npx tsc --noEmit
+          npm run build
+      - name: Commit verified fix to dev only
+        run: |
+          set -euo pipefail
+          test "$(git branch --show-current)" = dev/unknown2-1
+          rm .github/workflows/wingking-visibility-fix.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/globals.css .github/workflows/wingking-visibility-fix.yml
+          git diff --cached --check
+          git commit -m 'fix: ensure content visible without animation observer'
+          git push origin HEAD:dev/unknown2-1
