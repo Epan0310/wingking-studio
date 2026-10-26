@@ -63,12 +63,12 @@ main > section:first-of-type [class*="items-end"] > [class*="bg-[#ffb86d]"] {
   transform-origin: bottom center; animation: wingking-meter 950ms ease-in-out infinite alternate;
 }
 main > section:first-of-type [class*="items-end"] > div:nth-child(even) { animation-delay: -420ms; }
-.wingking-motion-ready .motion-reveal {
-  opacity: 0; transform: translate3d(0, 24px, 0);
-  transition: opacity 760ms var(--wingking-ease), transform 760ms var(--wingking-ease);
-  transition-delay: var(--motion-delay, 0ms);
+/* Fail-open reveals: all content remains visible even when JS/observers fail. */
+.wingking-motion-ready .motion-reveal { opacity: 1; transform: none; }
+.wingking-motion-ready .motion-reveal.motion-visible {
+  animation: wingking-fade-up 700ms var(--wingking-ease) 1;
+  animation-delay: var(--motion-delay, 0ms);
 }
-.wingking-motion-ready .motion-reveal.motion-visible { opacity: 1; transform: translate3d(0, 0, 0); }
 #capabilities .grid > div, #spaces .grid > div {
   position: relative; overflow: hidden;
   transition: border-color 340ms ease, box-shadow 420ms ease, background-color 340ms ease;
