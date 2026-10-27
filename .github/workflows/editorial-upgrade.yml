@@ -1,0 +1,32 @@
+name: Wingking Editorial UI
+on:
+  push:
+    branches: [dev/unknown2-1]
+    paths: [.github/workflows/editorial-upgrade.yml]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with: { ref: dev/unknown2-1 }
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: { ode-version: '22' }
+      - run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/design.mjs 'https://c9ab7109-d689-480d-86f7-318f0529f108.sandbox.floot.app/_cdn/static/wingking-editorial-20261027-v1.mjs'
+          echo '1830f6a0acdae06b65b7198a1c4c5f471ea3121b728a5f5c7dc267f28db22a31  /tmp/design.mjs' | sha256sum -c -
+          node /tmp/design.mjs
+          npm ci --no-audit --no-fund
+          npm run test:booking
+          npm run build
+          test "$(git branch --show-current)" = dev/unknown2-1
+          rm .github/workflows/editorial-upgrade.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/page.tsx app/globals.css .github/workflows/editorial-upgrade.yml
+          git diff --cached --check
+          git commit -m 'feat: editorial studio redesign with restrained motion'
+          git push origin HEAD:dev/unknown2-1
