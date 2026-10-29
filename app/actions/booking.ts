@@ -1,49 +1,76 @@
 "use server";
 
-// Mengimpor koneksi Prisma Client
-import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { prisma } from "@/lib/prisma";
+import {
+  isBookableService, validateBooking, hasScheduleConflict,
+  type BookingInput,
+} from "@/lib/booking-rules";
 
-// 1. Fungsi untuk mengambil seluruh daftar layanan dari database
 export async function getServices() {
   try {
-    const services = await prisma.service.findMany({
-      orderBy: { createdAt: "asc" }, // Urutkan berdasarkan waktu buat
-    });
-    return { success: true, data: services };
+    const services = await prisma.service.findMany({ orderBy: { createdAt: "asc" } });
+    return { success: true as const, data: services.filter((s) => isBookableService(s.name)) };
   } catch (error) {
-    console.error("Error fetching services:", error);
-    return { success: false, error: "Gagal mengambil data layanan" };
+    console.error("Unable to load studio services", error);
+    return { success: false as const, data: [], error: "Layanan sementara tidak tersedia." };
   }
 }
 
-// 2. Fungsi untuk menyimpan data booking baru yang dikirim dari form pelanggan
-export async function createBooking(formData: {
-  customerName: string;
-  customerPhone: string;
-  serviceId: string;
-  date: string;
-  startTime: string;
-  durationHours: number;
-}) {
-  try {
-    const newBooking = await prisma.booking.create({
-      data: {
-        customerName: formData.customerName,
-        customerPhone: formData.customerPhone,
-        serviceId: formData.serviceId,
-        date: new Date(formData.date), // Mengubah string tanggal menjadi format Date
-        startTime: formData.startTime,
-        durationHours: Number(formData.durationHours),
-        status: "PENDING", // Status default saat booking baru masuk
-      },
-    });
+export async function createBooking(raw: BookingInput) {
+  const validated = validateBooking(raw);
+  if (!validated.ok) return { success: false as const, error: validated.error };
+  const input = validated.value;
 
-    // Memperbarui cache halaman utama agar data langsung ter-refresh
-    revalidatePath("/");
-    return { success: true, data: newBooking };
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      // One facility-wide PostgreSQL advisory transaction lock per calendar date.
+      // This serializes concurrent submissions even on separate serverless instances.
+      await tx.$queryRaw`SELECT 1 AS locked FROM pg_advisory_xact_lock(hashtext('wingking-studio'), hashtext(${input.date}))`;
+
+      const service = await tx.service.findUnique({ where: { id: input.serviceId } });
+      if (!service || !isBookableService(service.name)) {
+        return { success: false as const, error: "Paket layanan tidak tersedia untuk booking per jam." };
+      }
+
+      const reservationDay = new Date(input.date + "T00:00:00.000Z");
+      const existing = await tx.booking.findMany({
+        where: { date: reservationDay, status: { in: ["PENDING", "CONFIRMED"] } },
+        select: { startTime: true, durationHours: true },
+      });
+      if (hasScheduleConflict(existing, input.startMinutes, input.durationHours)) {
+        return { success: false as const, error: "Jadwal bentrok. Silakan pilih jam lainnya." };
+      }
+
+      const recentRequests = await tx.booking.count({
+        where: {
+          customerPhone: input.customerPhone,
+          createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+        },
+      });
+      if (recentRequests >= 3) {
+        return { success: false as const, error: "Batas pengajuan harian tercapai. Hubungi studio untuk bantuan." };
+      }
+
+      const created = await tx.booking.create({
+        data: {
+          customerName: input.customerName,
+          customerPhone: input.customerPhone,
+          serviceId: service.id,
+          date: reservationDay,
+          startTime: input.startTime,
+          durationHours: input.durationHours,
+          status: "PENDING",
+        },
+        select: { id: true, status: true },
+      });
+      return { success: true as const, data: created };
+    }, { maxWait: 5000, timeout: 10000 });
+
+    if (result.success) revalidatePath("/admin");
+    return result;
   } catch (error) {
-    console.error("Error creating booking:", error);
-    return { success: false, error: "Gagal membuat booking" };
+    console.error("Booking transaction failed", error);
+    return { success: false as const, error: "Reservasi belum tersimpan. Silakan coba lagi." };
   }
 }

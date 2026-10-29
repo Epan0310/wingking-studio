@@ -1,6 +1,7 @@
 // Mengimpor fungsi backend action dan komponen form booking
 import { getServices } from "@/app/actions/booking";
 import BookingForm from "@/components/BookingForm";
+import MobileNav from "@/components/MobileNav";
 
 export default async function Home() {
   // Mengambil daftar layanan resmi Wingking Studio dari Supabase
@@ -8,11 +9,11 @@ export default async function Home() {
   const services = response.data || [];
 
   return (
-    <div className="w-full min-h-screen bg-[#131315] text-[#e5e1e4] font-sans antialiased">
+    <div className="wk-page w-full min-h-screen bg-[#131315] text-[#e5e1e4] font-sans antialiased">
       {/* =========================================================================
           1. FIXED NAVIGATION HEADER
          ========================================================================= */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e10]/95 backdrop-blur-md border-b border-[#353437]/60">
+      <header className="wk-header fixed top-0 left-0 right-0 z-50 bg-[#0e0e10]/95 backdrop-blur-md border-b border-[#353437]/60">
         <div className="h-20 w-full px-6 lg:px-16 flex items-center justify-between">
           <a
             className="group flex items-center gap-3 focus:outline-none"
@@ -49,7 +50,7 @@ export default async function Home() {
               Spaces
             </a>
             <a
-              href="#community"
+              href="#spaces"
               className="text-[#d7c3b1] hover:text-[#ffb86d] transition-all py-1"
             >
               Dispatches
@@ -62,7 +63,8 @@ export default async function Home() {
             </a>
           </nav>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 md:gap-4">
+            <MobileNav />
             <a
               href="https://instagram.com/w.hubstudio"
               target="_blank"
@@ -74,7 +76,7 @@ export default async function Home() {
             <div className="h-4 w-px bg-[#353437] hidden md:block"></div>
             <a
               href="/admin"
-              className="inline-flex items-center gap-2 bg-[#ffb86d] text-[#492900] font-mono text-xs uppercase tracking-wider px-4 py-2 hover:bg-[#e59840] transition-colors font-semibold"
+              className="hidden sm:inline-flex items-center gap-2 bg-[#ffb86d] text-[#492900] font-mono text-xs uppercase tracking-wider px-4 py-2 hover:bg-[#e59840] transition-colors font-semibold"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-[#492900]"></span>
               Admin Portal →
@@ -87,7 +89,7 @@ export default async function Home() {
         {/* =========================================================================
             2. RUNNING TELEMETRY TICKER (PURWOKERTO CONTEXT)
            ========================================================================= */}
-        <div className="w-full bg-[#0e0e10] px-6 lg:px-16 py-2 flex items-center justify-between text-[#c7c7c3] border-b border-[#353437]/40">
+        <div className="wk-ticker w-full bg-[#0e0e10] px-6 lg:px-16 py-2 flex items-center justify-between text-[#c7c7c3] border-b border-[#353437]/40">
           <div className="flex items-center gap-4 overflow-hidden whitespace-nowrap">
             <div className="flex items-center gap-2 text-[#ffb86d] shrink-0">
               <span className="w-2 h-2 rounded-full bg-[#ffb86d] animate-pulse"></span>
@@ -123,8 +125,8 @@ export default async function Home() {
         {/* =========================================================================
             3. HERO SECTION
            ========================================================================= */}
-        <section className="relative w-full bg-[#0e0e10]">
-          <div className="relative w-full h-[580px] lg:h-[680px] overflow-hidden">
+        <section className="wk-hero relative w-full bg-[#0e0e10]">
+          <div className="wk-hero-frame relative w-full h-[580px] lg:h-[680px] overflow-hidden">
             <img
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuDptAJUL0MDaNlofnooeMZ_ffMEAtzF7DgwyHFlLOw_OaMxX5GIUfGeVPgQt9XDZN8AFQ8SNmSXfhhgNq3AdPF72Y4sEc7aC3v-X7M73-7agnoiF4wg9-KRounN05qdO9AGCZadcTAXs12l_EuhNb_TEs0iintSwWMJao6_ohiOiA94a4HTelMhsG0pAj3F-C6vriU2RHIpgAeH5uVRbpXozPaObuE640kU5W-zWoYByIvSandD6HaUZQ"
               alt="Wingking Studio Master Control Room"
@@ -165,23 +167,23 @@ export default async function Home() {
             </div>
 
             {/* Content Display */}
-            <div className="absolute bottom-0 left-0 right-0 px-6 lg:px-16 pb-12">
+            <div className="wk-hero-copy absolute bottom-0 left-0 right-0 px-6 lg:px-16 pb-12">
               <div className="max-w-6xl">
                 <div className="inline-flex items-center gap-2 bg-[#2a2a2c] px-3 py-1 mb-4 border border-[#353437]">
                   <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffb86d] font-semibold">
                     [ AUDIO PRODUCTION & REHEARSAL HUB ]
                   </span>
                 </div>
-                <h1 className="font-serif text-5xl lg:text-8xl tracking-tight text-[#e5e1e4] uppercase max-w-4xl leading-[0.95]">
+                <h1 className="wk-hero-title font-serif text-5xl lg:text-8xl tracking-tight text-[#e5e1e4] uppercase max-w-4xl leading-[0.95]">
                   Your Sound. <br className="hidden sm:inline" />
                   Your Space.
                 </h1>
-                <p className="text-[#d7c3b1] text-base lg:text-xl max-w-2xl mt-4 font-light leading-relaxed">
+                <p className="wk-hero-lead text-[#d7c3b1] text-base lg:text-xl max-w-2xl mt-4 font-light leading-relaxed">
                   Ruang rekaman & latihan band berstandar akustik presisi di
                   Purwokerto. Menghadirkan karakter suara utuh, tebal, dan siap
                   bersaing di industri musik.
                 </p>
-                <div className="mt-6 flex flex-wrap items-center gap-4">
+                <div className="wk-hero-ctas mt-6 flex flex-wrap items-center gap-4">
                   <a
                     href="#booking-console"
                     className="inline-flex items-center gap-2 bg-[#ffb86d] text-[#492900] font-mono text-xs uppercase tracking-wider px-6 py-3.5 font-semibold hover:bg-[#e59840] transition-all shadow-xl"
@@ -209,7 +211,7 @@ export default async function Home() {
            ========================================================================= */}
         <section
           id="about"
-          className="w-full bg-[#131315] py-20 px-6 lg:px-16 border-b border-[#353437]/60"
+          className="wk-about w-full bg-[#131315] py-20 px-6 lg:px-16 border-b border-[#353437]/60"
         >
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
             <div className="lg:col-span-6 flex flex-col justify-between h-full">
@@ -249,7 +251,7 @@ export default async function Home() {
                     Sesi Tracking
                   </span>
                   <span className="font-serif text-3xl text-[#ffb86d] mt-1">
-                    1,500+
+                    —
                   </span>
                   <span className="font-mono text-[9px] text-[#b5b5b2]">
                     Jam Jamming & Rec
@@ -260,7 +262,7 @@ export default async function Home() {
                     Karya Rilis
                   </span>
                   <span className="font-serif text-3xl text-[#e5e1e4] mt-1">
-                    120+
+                    —
                   </span>
                   <span className="font-mono text-[9px] text-[#b5b5b2]">
                     Single & Album
@@ -271,7 +273,7 @@ export default async function Home() {
                     Kualitas Ruang
                   </span>
                   <span className="font-serif text-3xl text-[#e5e1e4] mt-1">
-                    100%
+                    —
                   </span>
                   <span className="font-mono text-[9px] text-[#b5b5b2]">
                     Treated Acoustics
@@ -313,7 +315,7 @@ export default async function Home() {
            ========================================================================= */}
         <section
           id="capabilities"
-          className="w-full bg-[#1b1b1d] py-20 px-6 lg:px-16 border-b border-[#353437]/60"
+          className="wk-services w-full bg-[#1b1b1d] py-20 px-6 lg:px-16 border-b border-[#353437]/60"
         >
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
             <div>
@@ -336,9 +338,9 @@ export default async function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="wk-services-grid grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Service Card 1 */}
-            <div className="bg-[#131315] p-6 border border-[#353437] flex flex-col justify-between relative group">
+            <div className="wk-service-card bg-[#131315] p-6 border border-[#353437] flex flex-col justify-between relative group">
               <div>
                 <div className="flex items-center justify-between pb-2 mb-4 border-b border-[#353437]">
                   <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffb86d] font-semibold">
@@ -371,7 +373,7 @@ export default async function Home() {
             </div>
 
             {/* Service Card 2 */}
-            <div className="bg-[#131315] p-6 border border-[#353437] flex flex-col justify-between relative group">
+            <div className="wk-service-card bg-[#131315] p-6 border border-[#353437] flex flex-col justify-between relative group">
               <div>
                 <div className="flex items-center justify-between pb-2 mb-4 border-b border-[#353437]">
                   <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffb86d] font-semibold">
@@ -404,7 +406,7 @@ export default async function Home() {
             </div>
 
             {/* Service Card 3 */}
-            <div className="bg-[#131315] p-6 border border-[#353437] flex flex-col justify-between relative group">
+            <div className="wk-service-card bg-[#131315] p-6 border border-[#353437] flex flex-col justify-between relative group">
               <div>
                 <div className="flex items-center justify-between pb-2 mb-4 border-b border-[#353437]">
                   <span className="font-mono text-[10px] uppercase tracking-widest text-[#ffb86d] font-semibold">
@@ -426,10 +428,10 @@ export default async function Home() {
                 </p>
               </div>
               <a
-                href="#booking-console"
+                href="https://instagram.com/w.hubstudio" target="_blank" rel="noopener noreferrer"
                 className="font-mono text-xs uppercase text-[#ffb86d] font-semibold flex items-center gap-1"
               >
-                Pilih Paket Ini{" "}
+                Konsultasi Mixing{" "}
                 <span className="material-symbols-outlined text-[16px]">
                   arrow_forward
                 </span>
@@ -443,7 +445,7 @@ export default async function Home() {
            ========================================================================= */}
         <section
           id="spaces"
-          className="w-full bg-[#131315] py-20 px-6 lg:px-16 border-b border-[#353437]/60"
+          className="wk-spaces w-full bg-[#131315] py-20 px-6 lg:px-16 border-b border-[#353437]/60"
         >
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
             <div>
@@ -462,8 +464,8 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-[#1b1b1d] p-4 border border-[#353437]">
+          <div className="wk-space-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="wk-space-card bg-[#1b1b1d] p-4 border border-[#353437]">
               <div className="flex items-center justify-between text-[#a08d7e] font-mono text-[10px] uppercase mb-2">
                 <span>[ BAY 01 ]</span>
                 <span className="text-[#ffb86d]">REHEARSAL ROOM</span>
@@ -482,7 +484,7 @@ export default async function Home() {
               </p>
             </div>
 
-            <div className="bg-[#1b1b1d] p-4 border border-[#353437]">
+            <div className="wk-space-card bg-[#1b1b1d] p-4 border border-[#353437]">
               <div className="flex items-center justify-between text-[#a08d7e] font-mono text-[10px] uppercase mb-2">
                 <span>[ BAY 02 ]</span>
                 <span className="text-[#ffb86d]">CONTROL ROOM</span>
@@ -501,7 +503,7 @@ export default async function Home() {
               </p>
             </div>
 
-            <div className="bg-[#1b1b1d] p-4 border border-[#353437]">
+            <div className="wk-space-card bg-[#1b1b1d] p-4 border border-[#353437]">
               <div className="flex items-center justify-between text-[#a08d7e] font-mono text-[10px] uppercase mb-2">
                 <span>[ BAY 03 ]</span>
                 <span className="text-[#ffb86d]">BACKLINE RIGS</span>
@@ -522,7 +524,7 @@ export default async function Home() {
               </p>
             </div>
 
-            <div className="bg-[#1b1b1d] p-4 border border-[#353437]">
+            <div className="wk-space-card bg-[#1b1b1d] p-4 border border-[#353437]">
               <div className="flex items-center justify-between text-[#a08d7e] font-mono text-[10px] uppercase mb-2">
                 <span>[ BAY 04 ]</span>
                 <span className="text-[#ffb86d]">VOCAL BOOTH</span>
@@ -550,7 +552,7 @@ export default async function Home() {
            ========================================================================= */}
         <section
           id="booking-console"
-          className="w-full bg-[#1b1b1d] py-20 px-6 lg:px-16 border-b border-[#353437]/60"
+          className="wk-booking w-full bg-[#1b1b1d] py-20 px-6 lg:px-16 border-b border-[#353437]/60"
         >
           <div className="max-w-6xl mx-auto">
             <div className="mb-8">
@@ -568,6 +570,7 @@ export default async function Home() {
               </h2>
             </div>
 
+            {!response.success && <p role="alert" className="mb-5 border border-red-400 p-4 text-red-300">Layanan booking belum tersedia karena koneksi data bermasalah. Coba lagi nanti.</p>}
             <BookingForm services={services} />
           </div>
         </section>
